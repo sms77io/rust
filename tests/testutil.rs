@@ -14,8 +14,6 @@ pub fn get_client() -> Client {
 }
 
 pub fn rand_str() -> String {
-    // rand::thread_rng().gen::<u32>()
-
     let rand_string: String = thread_rng()
         .sample_iter(&Alphanumeric)
         .take(16)

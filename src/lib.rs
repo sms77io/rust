@@ -12,6 +12,7 @@ pub mod status;
 pub mod voice;
 pub mod hooks;
 pub mod validate_for_voice;
+pub mod contacts;
 
 fn to_string<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     Ok(match Value::deserialize(deserializer)? {
