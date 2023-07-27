@@ -9,6 +9,7 @@ pub mod lookup;
 pub mod pricing;
 pub mod sms;
 pub mod status;
+pub mod subaccounts;
 pub mod voice;
 pub mod hooks;
 pub mod validate_for_voice;

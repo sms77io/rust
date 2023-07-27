@@ -5,5 +5,6 @@ mod testutil;
 
 #[test]
 fn balance() {
-    assert!(Balance::new(get_client()).get().is_ok());
+    let ok = Balance::new(get_client()).get().is_ok();
+    assert!(ok);
 }

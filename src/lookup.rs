@@ -114,12 +114,13 @@ impl Lookup {
 
     fn post(&self, params: LookupParams, type_: &str, json: bool) -> Result<Response, Error> {
         let req = self.client.request("POST", "lookup").clone();
-
-        Ok(req.send_form(&[
+        let res = req.send_form(&[
             ("json", self.client.bool_to_string(json)),
             ("number", &*params.number),
             ("type", type_),
-        ])?)
+        ])?;
+
+        Ok(res)
     }
 
     pub fn cnam(&self, params: LookupParams) -> Result<CallingNameDelivery, Error> {
