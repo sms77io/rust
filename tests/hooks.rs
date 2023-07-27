@@ -1,5 +1,5 @@
 use testutil::*;
-use seven_client::hooks::{Hooks, HookSubscribeParams, HookUnsubscribeParams};
+use seven_client::hooks::{EventType, Hooks, HookSubscribeParams, HookUnsubscribeParams};
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
 
@@ -28,7 +28,7 @@ fn read() {
 fn subscribe() {
     let res = client().subscribe(HookSubscribeParams {
         event_filter: None,
-        event_type: "voice_status".to_string(),
+        event_type: EventType::VoiceStatus,
         request_method: None,
         target_url: format!("https://rust.tld/{}", rand_str()),
     });

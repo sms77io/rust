@@ -4,6 +4,21 @@ use serde::{Deserialize};
 
 const ENDPOINT: &str = "hooks";
 
+pub enum EventType {
+    All,
+    DLR,
+    InboundSMS,
+    Tracking,
+    VoiceCall,
+    VoiceStatus,
+}
+
+impl Default for EventType {
+    fn default() -> Self {
+        panic!("Event type must be set");
+    }
+}
+
 #[derive(Deserialize)]
 pub struct Hook {
     pub created: String,
@@ -22,7 +37,7 @@ pub struct HooksRead {
 #[derive(Default)]
 pub struct HookSubscribeParams {
     pub event_filter: Option<String>,
-    pub event_type: String,
+    pub event_type: EventType,
     pub request_method: Option<String>,
     pub target_url: String,
 }
@@ -62,14 +77,22 @@ impl Hooks {
     }
 
     pub fn subscribe(&self, params: HookSubscribeParams) -> Result<HookSubscribeResponse, Error> {
-        Ok(self.request("POST", "subscribe")
+        let event_type = match params.event_type {
+            EventType::All => {"all"}
+            EventType::DLR => {"dlr"}
+            EventType::InboundSMS => {"sms_mo"}
+            EventType::Tracking => {"tracking"}
+            EventType::VoiceCall => {"voice_call"}
+            EventType::VoiceStatus => {"voice_status"}
+        };
+        let res = self.request("POST", "subscribe")
             .send_form(&[
-                ("event_type", &*params.event_type),
+                ("event_type", event_type),
                 ("request_method", &*params.request_method.unwrap_or_default()),
                 ("target_url", &*params.target_url),
             ])?
-            .into_json::<HookSubscribeResponse>()?
-        )
+            .into_json::<HookSubscribeResponse>()?;
+        Ok(res)
     }
 
     pub fn unsubscribe(&self, params: HookUnsubscribeParams) -> Result<HookUnsubscribeResponse, Error> {
