@@ -5,6 +5,12 @@ mod testutil;
 
 #[test]
 fn balance() {
-    let ok = Balance::new(get_client()).get().is_ok();
-    assert!(ok);
+    let res = Balance::new(get_client()).get();
+    assert!(res.is_ok());
+}
+
+#[test]
+fn json() {
+    let res = Balance::new(get_client()).json();
+    assert!(res.is_ok());
 }
