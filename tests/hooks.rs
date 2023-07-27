@@ -1,5 +1,5 @@
 use testutil::*;
-use sms77_client::hooks::{Hooks, HookSubscribeParams, HookUnsubscribeParams};
+use seven_client::hooks::{Hooks, HookSubscribeParams, HookUnsubscribeParams};
 use std::collections::HashMap;
 
 mod testutil;

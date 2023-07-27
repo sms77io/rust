@@ -1,6 +1,6 @@
 use testutil::*;
-use sms77_client::analytics::{AnalyticsParams, Analytics};
-use sms77_client::journal::{Journal, JournalParams};
+use seven_client::analytics::{AnalyticsParams, Analytics};
+use seven_client::journal::{Journal, JournalParams};
 
 mod testutil;
 

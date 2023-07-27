@@ -7,7 +7,7 @@ pub struct Client {
 
 impl Client {
     pub fn request(&self, method: &str, endpoint: &str) -> Request {
-        ureq::request(method, &*format!("https://gateway.sms77.io/api/{}", endpoint))
+        ureq::request(method, &*format!("https://gateway.seven.io/api/{}", endpoint))
             .set("X-API-KEY", &*self.api_key)
             .set("SentWith", &*self.sent_with)
     }

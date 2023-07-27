@@ -1,6 +1,6 @@
 use testutil::*;
-use sms77_client::sms::{Sms, SmsTextParams, SmsJsonParams};
-use sms77_client::status::{Status, StatusParams};
+use seven_client::sms::{Sms, SmsTextParams, SmsJsonParams};
+use seven_client::status::{Status, StatusParams};
 
 mod testutil;
 

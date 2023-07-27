@@ -1,5 +1,5 @@
 use testutil::*;
-use sms77_client::voice::{Voice, VoiceParams};
+use seven_client::voice::{Voice, VoiceParams};
 
 mod testutil;
 
@@ -9,9 +9,9 @@ fn client() -> Voice {
 
 fn params() -> VoiceParams {
     VoiceParams {
-        from: Option::from("Sms77.io".to_string()),
+        from: Option::from("seven.io".to_string()),
         text: "HI2U!".to_string(),
-        to: "+491716992343".to_string(),
+        to: "+49179876543210".to_string(),
         xml: None,
     }
 }

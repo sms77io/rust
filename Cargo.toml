@@ -5,14 +5,15 @@ serde_json = "1.0"
 ureq = { version = "2.0.2", features = ["json"] }
 
 [package]
-authors = ["sms77 e.K. <support@sms77.io>"]
+authors = ["seven communications GmbH & Co. KG <support@seven.io>"]
 categories = ["api-bindings", "web-programming"]
-description = "Official API client for the Sms77.io SMS Gateway."
+description = "Official API client for the seven.io SMS Gateway."
 edition = "2018"
-homepage = "https://github.com/sms77io/rust"
+homepage = "https://github.com/seven-io/rust"
 keywords = ["cnam", "hlr", "mnp", "sms", "tts"]
+license = "MIT"
 license-file = "LICENSE"
-name = "sms77-client"
+name = "seven-client"
 readme = "README.md"
-repository = "https://github.com/sms77io/rust.git"
-version = "0.2.0"
+repository = "https://github.com/seven-io/rust.git"
+version = "0.3.0"

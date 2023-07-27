@@ -1,4 +1,4 @@
-use sms77_client::balance::Balance;
+use seven_client::balance::Balance;
 use testutil::*;
 
 mod testutil;

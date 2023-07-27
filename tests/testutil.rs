@@ -1,12 +1,12 @@
 use std::env;
-use sms77_client::client::Client;
+use seven_client::client::Client;
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
 
 pub const SENT_WITH: &str = "Rust";
 
 pub fn get_api_key() -> String {
-    return env::var("SMS77_DUMMY_API_KEY").unwrap();
+    return env::var("SEVEN_API_KEY_SANDBOX").unwrap();
 }
 
 pub fn get_client() -> Client {

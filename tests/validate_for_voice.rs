@@ -1,6 +1,6 @@
 use testutil::*;
-use sms77_client::voice::{Voice, VoiceParams};
-use sms77_client::validate_for_voice::{ValidateForVoice, ValidateForVoiceParams};
+use seven_client::voice::{Voice, VoiceParams};
+use seven_client::validate_for_voice::{ValidateForVoice, ValidateForVoiceParams};
 
 mod testutil;
 

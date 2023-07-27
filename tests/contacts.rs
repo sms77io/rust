@@ -1,5 +1,5 @@
 use testutil::*;
-use sms77_client::contacts::{Contacts, ContactsReadParams, ContactDeleteParams, ContactEditParams};
+use seven_client::contacts::{Contacts, ContactsReadParams, ContactDeleteParams, ContactEditParams};
 
 mod testutil;
 
