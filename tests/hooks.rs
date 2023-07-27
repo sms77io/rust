@@ -26,11 +26,13 @@ fn read() {
 
 #[test]
 fn subscribe() {
-    assert!(client().subscribe(HookSubscribeParams {
+    let res = client().subscribe(HookSubscribeParams {
+        event_filter: None,
         event_type: "voice_status".to_string(),
         request_method: None,
         target_url: format!("https://rust.tld/{}", rand_str()),
-    }).is_ok());
+    });
+    assert!(res.is_ok());
 }
 
 #[test]

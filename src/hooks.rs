@@ -21,6 +21,7 @@ pub struct HooksRead {
 
 #[derive(Default)]
 pub struct HookSubscribeParams {
+    pub event_filter: Option<String>,
     pub event_type: String,
     pub request_method: Option<String>,
     pub target_url: String,
