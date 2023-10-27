@@ -11,6 +11,7 @@ fn params() -> VoiceParams {
     VoiceParams {
         debug: None,
         from: Option::from("seven.io".to_string()),
+        ringtime: Option::from(30),
         text: "HI2U!".to_string(),
         to: "+49179876543210".to_string(),
         xml: None,

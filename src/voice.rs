@@ -26,6 +26,7 @@ pub struct VoiceMessage {
 pub struct VoiceParams {
     pub debug: Option<bool>,
     pub from: Option<String>,
+    pub ringtime: Option<u8>,
     pub text: String,
     pub to: String,
     pub xml: Option<bool>,
@@ -48,6 +49,7 @@ impl Voice {
                 ("debug", self.client.bool_to_string(params.debug.unwrap_or_default())),
                 ("from", &*params.from.unwrap_or_default()),
                 ("json", self.client.bool_to_string(json)),
+                ("ringtime", &*params.ringtime.unwrap_or_default().to_string()),
                 ("text", &*params.text),
                 ("to", &*params.to),
                 ("xml", self.client.bool_to_string(params.xml.unwrap_or_default())),
