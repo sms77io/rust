@@ -24,6 +24,7 @@ pub struct VoiceMessage {
 }
 
 pub struct VoiceParams {
+    pub debug: Option<bool>,
     pub from: Option<String>,
     pub text: String,
     pub to: String,
@@ -44,6 +45,7 @@ impl Voice {
     fn post(&self, params: VoiceParams, json: bool) -> Result<Response, Error> {
         Ok(self.client.request("POST", "voice")
             .send_form(&[
+                ("debug", self.client.bool_to_string(params.debug.unwrap_or_default())),
                 ("from", &*params.from.unwrap_or_default()),
                 ("json", self.client.bool_to_string(json)),
                 ("text", &*params.text),

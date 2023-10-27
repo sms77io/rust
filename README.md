@@ -4,12 +4,7 @@
 
 ## Installation
 
-Add to `Cargo.toml`
-
-```toml
-[dependencies]
-seven-client = "0.3.0"
-```
+`cargo add seven-client`
 
 ### Example
 
@@ -20,7 +15,7 @@ println!("Balance: {}", client.get().is_ok());
 
 #### Support
 
-Need help? Feel free to [contact us](https://www.seven.io/en/company/contact/).
+Need help? Feel free to [contact us](https://www.seven.io/en/company/contact).
 
 ##### License
 
