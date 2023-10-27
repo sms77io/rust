@@ -11,6 +11,8 @@ fn balance() {
 
 #[test]
 fn json() {
-    let res = Balance::new(get_client()).json();
-    assert!(res.is_ok());
+    let result = Balance::new(get_client()).json();
+    assert!(result.is_ok());
+    let response = result.unwrap();
+    assert_eq!(response.currency.is_empty(), false)
 }

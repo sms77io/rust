@@ -4,8 +4,8 @@ use serde::{Deserialize};
 
 #[derive(Deserialize)]
 pub struct BalanceResponse {
-    amount: f32,
-    currency: String,
+    pub amount: f32,
+    pub currency: String,
 }
 
 pub struct Balance {
