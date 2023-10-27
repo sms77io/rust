@@ -18,24 +18,40 @@ fn default_params() -> AnalyticsParams {
 
 #[test]
 fn grouped_by_country() {
-    let res = init_client().group_by_country(default_params());
-    assert!(res.is_ok());
+    let result = init_client().group_by_country(default_params());
+    assert!(result.is_ok());
+
+    let response = result.unwrap();
+    for entry in response {
+        assert_eq!(entry.country.is_empty(), false);
+    }
+
 }
 
 #[test]
 fn grouped_by_date() {
-    let res = init_client().group_by_date(default_params());
-    assert!(res.is_ok())
+    let result = init_client().group_by_date(default_params());
+    assert!(result.is_ok());
+
+    let response = result.unwrap();
+    for entry in response {
+        assert_eq!(entry.date.is_empty(), false);
+    }
 }
 
 #[test]
 fn grouped_by_label() {
-    let res = init_client().group_by_label(default_params());
-    assert!(res.is_ok())
+    let result = init_client().group_by_label(default_params());
+    assert!(result.is_ok());
 }
 
 #[test]
 fn grouped_by_subaccount() {
-    let res = init_client().group_by_subaccount(default_params());
-    assert!(res.is_ok())
+    let result = init_client().group_by_subaccount(default_params());
+    assert!(result.is_ok());
+
+    let response = result.unwrap();
+    for entry in response {
+        assert_eq!(entry.account.is_empty(), false);
+    }
 }
