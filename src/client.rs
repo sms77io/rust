@@ -8,7 +8,7 @@ pub struct Client {
 impl Client {
     pub fn request(&self, method: &str, endpoint: &str) -> Request {
         ureq::request(method, &*format!("https://gateway.seven.io/api/{}", endpoint))
-            .set("X-API-KEY", &*self.api_key)
+            .set("X-Api-Key", &*self.api_key)
             .set("SentWith", &*self.sent_with)
     }
 
