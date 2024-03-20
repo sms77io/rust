@@ -2,9 +2,8 @@ use crate::client::Client;
 use ureq::{Error};
 use serde::{Deserialize, Serialize};
 
-//const ENDPOINT_BASE: &str = "rcs";
-const ENDPOINT_MESSAGES: &str =   "rcs/messages";
-const ENDPOINT_EVENTS: &str =   "rcs/events";
+const ENDPOINT_MESSAGES: &str = "rcs/messages";
+const ENDPOINT_EVENTS: &str = "rcs/events";
 
 #[derive(Serialize)]
 pub enum RcsEvent {
@@ -91,7 +90,7 @@ pub struct RcsMessage {
 }
 
 pub struct Rcs {
-    client: Client
+    client: Client,
 }
 
 impl Rcs {
@@ -105,7 +104,7 @@ impl Rcs {
         let id = params.id;
         let endpoint = format!("{ENDPOINT_MESSAGES}/{id}");
 
-        Ok(self.client.request("DELETE",  &*endpoint)
+        Ok(self.client.request("DELETE", &*endpoint)
             .call()
             .unwrap()
             //.send_form(&*[])?
