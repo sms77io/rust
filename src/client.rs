@@ -6,6 +6,14 @@ pub struct Client {
 }
 
 impl Client {
+    pub fn get(&self, endpoint: &str) -> Request {
+        self.request("GET", endpoint)
+    }
+
+    pub fn patch(&self, endpoint: &str) -> Request {
+         self.request("PATCH", endpoint)
+    }
+
     pub fn request(&self, method: &str, endpoint: &str) -> Request {
         ureq::request(method, &*format!("https://gateway.seven.io/api/{}", endpoint))
             .set("X-Api-Key", &*self.api_key)

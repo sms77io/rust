@@ -202,13 +202,13 @@ impl Numbers {
     }
 
     pub fn update(&self, params: UpdateNumberParams) -> Result<PhoneNumber, Error> {
+        let number = params.number;
         let endpoint = format!("numbers/active/{number}");
         let res = self.client.request("PATCH", &*endpoint)
             .send_form(&[
                 ("email_forward", &*params.email_forward.unwrap_or_default()),
-                ("friendly_name", &*params.friendly_name),
+                ("friendly_name", &*params.friendly_name.unwrap_or_default()),
                 ("sms_forward", &*params.sms_forward.unwrap_or_default()),
-
             ])?
             .into_json::<PhoneNumber>()?;
         Ok(res)

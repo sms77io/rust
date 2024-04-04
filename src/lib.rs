@@ -1,4 +1,4 @@
-use serde::{Deserializer, de, Deserialize};
+use serde::{Deserializer, de, Deserialize, Serialize};
 use serde_json::Value;
 
 pub mod analytics;
@@ -17,6 +17,31 @@ pub mod contacts;
 pub mod rcs;
 pub mod groups;
 pub mod numbers;
+
+#[derive(Debug, Deserialize)]
+pub struct PagingMetadata {
+    pub count: u64,
+    pub has_more: bool,
+    pub offset: u64,
+    pub total: u64,
+}
+
+#[derive(Default, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum OrderDirection {
+    #[default]
+    Asc,
+    Desc
+}
+
+impl OrderDirection {
+    fn as_str(&self) -> &'static str {
+        match self {
+            OrderDirection::Asc => "asc",
+            OrderDirection::Desc => "desc"
+        }
+    }
+}
 
 fn to_string<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     Ok(match Value::deserialize(deserializer)? {
