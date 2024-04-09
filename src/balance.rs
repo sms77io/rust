@@ -19,18 +19,11 @@ impl Balance {
         }
     }
 
-    pub fn get(&self) -> Result<f64, Error> {
-        let res = self.client.request("GET", "balance")
-            .call()?
-            .into_json::<f64>()?;
-        Ok(res)
-    }
-
-    pub fn json(&self) -> Result<BalanceResponse, Error> {
+    pub fn get(&self) -> Result<BalanceResponse, Error> {
         let res = self.client.request("GET", "balance")
             .set("Accept", "application/json")
             .call()?
-            .into_json::<BalanceResponse>()?;
+            .into_json()?;
         Ok(res)
     }
 }

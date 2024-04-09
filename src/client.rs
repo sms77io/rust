@@ -6,6 +6,10 @@ pub struct Client {
 }
 
 impl Client {
+
+    pub fn delete(&self, endpoint: &str) -> Request {
+        self.request("DELETE", endpoint)
+    }
     pub fn get(&self, endpoint: &str) -> Request {
         self.request("GET", endpoint)
     }

@@ -67,8 +67,36 @@ impl Analytics {
         }
     }
 
-    pub fn get(&self, params: AnalyticsParams, group_by: &str) -> Request {
-        let mut req = self.client.request("GET", "analytics").clone();
+    pub fn group_by_country(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByCountry>, Error> {
+        let res = self.get(params, "country")
+            .call()?
+            .into_json()?;
+        Ok(res)
+    }
+
+    pub fn group_by_date(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByDate>, Error> {
+        let res = self.get(params, "date")
+            .call()?
+            .into_json()?;
+        Ok(res)
+    }
+
+    pub fn group_by_label(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByLabel>, Error> {
+        let res = self.get(params, "label")
+            .call()?
+            .into_json()?;
+        Ok(res)
+    }
+
+    pub fn group_by_subaccount(&self, params: AnalyticsParams) -> Result<Vec<AnalyticBySubaccount>, Error> {
+        let res = self.get(params, "subaccount")
+            .call()?
+            .into_json()?;
+        Ok(res)
+    }
+
+    fn get(&self, params: AnalyticsParams, group_by: &str) -> Request {
+        let mut req = self.client.get("analytics").clone();
 
         if params.end.is_some() {
             req = req.query("end", &*params.end.unwrap_or_default());
@@ -84,25 +112,5 @@ impl Analytics {
         }
 
         req.query("group_by", group_by)
-    }
-
-    pub fn group_by_country(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByCountry>, Error> {
-        let res = self.get(params, "country").call()?.into_json::<Vec<AnalyticByCountry>>()?;
-        Ok(res)
-    }
-
-    pub fn group_by_date(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByDate>, Error> {
-        let res = self.get(params, "date").call()?.into_json::<Vec<AnalyticByDate>>()?;
-        Ok(res)
-    }
-
-    pub fn group_by_label(&self, params: AnalyticsParams) -> Result<Vec<AnalyticByLabel>, Error> {
-        let res = self.get(params, "label").call()?.into_json::<Vec<AnalyticByLabel>>()?;
-        Ok(res)
-    }
-
-    pub fn group_by_subaccount(&self, params: AnalyticsParams) -> Result<Vec<AnalyticBySubaccount>, Error> {
-        let res = self.get(params, "subaccount").call()?.into_json::<Vec<AnalyticBySubaccount>>()?;
-        Ok(res)
     }
 }
