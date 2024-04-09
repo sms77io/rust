@@ -10,6 +10,10 @@ impl Client {
         self.request("GET", endpoint)
     }
 
+    pub fn post(&self, endpoint: &str) -> Request {
+        self.request("POST", endpoint)
+    }
+
     pub fn patch(&self, endpoint: &str) -> Request {
          self.request("PATCH", endpoint)
     }

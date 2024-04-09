@@ -1,8 +1,64 @@
+use strum::IntoEnumIterator;
 use crate::client::Client;
 use crate::to_string;
 use ureq::{Error, Response};
 use serde::{Deserialize, Deserializer, de};
 use serde_json::Value;
+use strum_macros::EnumIter;
+
+#[derive(Deserialize, EnumIter)]
+pub enum RcsCapability {
+    ActionCreateCalendarEvent,
+    ActionDial,
+    ActionOpenUrl,
+    ActionShareLocation,
+    ActionViewLocation,
+    FeatureUnspecified,
+    Revocation,
+    RichcardCarousel,
+    RichcardStandalone,
+}
+
+impl RcsCapability {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RcsCapability::ActionCreateCalendarEvent => "ACTION_CREATE_CALENDAR_EVENT",
+            RcsCapability::ActionDial => "ACTION_DIAL",
+            RcsCapability::ActionOpenUrl => "ACTION_OPEN_URL",
+            RcsCapability::ActionShareLocation => "ACTION_SHARE_LOCATION",
+            RcsCapability::ActionViewLocation => "ACTION_VIEW_LOCATION",
+            RcsCapability::FeatureUnspecified => "FEATURE_UNSPECIFIED",
+            RcsCapability::Revocation => "REVOCATION",
+            RcsCapability::RichcardCarousel => "RICHCARD_CAROUSEL",
+            RcsCapability::RichcardStandalone => "RICHCARD_STANDALONE",
+        }
+    }
+
+/*    pub fn iterator() -> Iter<'static, str> {
+        static CAPABILITIES: [str; 9] = [
+            *RcsCapability::ActionCreateCalendarEvent.as_str(),
+            *RcsCapability::ActionDial.as_str(),
+            *RcsCapability::ActionOpenUrl.as_str(),
+            *RcsCapability::ActionShareLocation.as_str(),
+            *RcsCapability::ActionViewLocation.as_str(),
+            *RcsCapability::FeatureUnspecified.as_str(),
+            *RcsCapability::Revocation.as_str(),
+            *RcsCapability::RichcardCarousel.as_str(),
+            *RcsCapability::RichcardStandalone.as_str(),
+        ];
+        CAPABILITIES.iter()
+    }*/
+
+    pub fn is_valid(str: &str) -> bool {
+        for capability in RcsCapability::iter() {
+            if capability.as_str() == str {
+                return true
+            }
+        }
+
+        return false
+    }
+}
 
 fn to_roaming<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Roaming, D::Error> {
     Ok(match Value::deserialize(deserializer)? {
@@ -34,14 +90,28 @@ pub struct Carrier {
 
 #[derive(Deserialize)]
 pub struct NumberFormat {
-    pub national: String,
     pub carrier: String,
     pub country_code: String,
     pub country_iso: String,
     pub country_name: String,
     pub international: String,
     pub international_formatted: String,
+    pub national: String,
     pub network_type: String,
+    pub success: bool,
+}
+
+#[derive(Deserialize)]
+pub struct  RcsCapabilities  {
+    pub carrier: String,
+    pub country_code: String,
+    pub country_iso: String,
+    pub country_name: String,
+    pub international: String,
+    pub international_formatted: String,
+    pub national: String,
+    pub network_type: String,
+    pub rcs_capabilities: Vec<RcsCapability>,
     pub success: bool,
 }
 
@@ -112,34 +182,48 @@ impl Lookup {
         }
     }
 
-    fn post(&self, params: LookupParams, type_: &str, json: bool) -> Result<Response, Error> {
-        let req = self.client.request("POST", "lookup").clone();
-        let res = req.send_form(&[
-            ("json", self.client.bool_to_string(json)),
-            ("number", &*params.number),
-            ("type", type_),
-        ])?;
-
-        Ok(res)
-    }
-
     pub fn cnam(&self, params: LookupParams) -> Result<CallingNameDelivery, Error> {
-        Ok(self.post(params, "cnam", false).unwrap().into_json::<CallingNameDelivery>()?)
+        let result = self.get(params, "cnam")
+            .unwrap()
+            .into_json()?;
+        Ok(result)
     }
 
     pub fn format(&self, params: LookupParams) -> Result<NumberFormat, Error> {
-        Ok(self.post(params, "format", false).unwrap().into_json::<NumberFormat>()?)
+        let result = self.get(params, "format")
+            .unwrap()
+            .into_json()?;
+        Ok(result)
     }
 
     pub fn hlr(&self, params: LookupParams) -> Result<HomeLocationRegister, Error> {
-        Ok(self.post(params, "hlr", false).unwrap().into_json::<HomeLocationRegister>()?)
+        let result = self.get(params, "hlr")
+            .unwrap()
+            .into_json()?;
+        Ok(result)
     }
 
-    pub fn mnp_text(&self, params: LookupParams) -> Result<String, Error> {
-        Ok(self.post(params, "mnp", false).unwrap().into_string()?)
+    pub fn mnp(&self, params: LookupParams) -> Result<MobileNumberPortability, Error> {
+        let result = self.get(params, "mnp")
+            .unwrap()
+            .into_json()?;
+        Ok(result)
     }
 
-    pub fn mnp_json(&self, params: LookupParams) -> Result<MobileNumberPortability, Error> {
-        Ok(self.post(params, "mnp", true).unwrap().into_json::<MobileNumberPortability>()?)
+    pub fn rcs(&self, params: LookupParams) -> Result<RcsCapabilities, Error> {
+        let result = self.get(params, "rcs")
+            .unwrap()
+            .into_json()?;
+
+        Ok(result)
+    }
+
+    fn get(&self, params: LookupParams, type_: &str) -> Result<Response, Error> {
+        let result = self.client.get(format!("lookup/{type_}").as_str())
+            .set("Accept", "application/json")
+            .query("number", &*params.number)
+            .call()?;
+
+        Ok(result)
     }
 }
