@@ -4,12 +4,12 @@ use serde::{Deserialize};
 
 #[derive(Deserialize)]
 pub struct CountryNetwork {
-    pub comment: String,
+    pub comment: Option<String>,
     pub features: Vec<String>,
     pub mcc: String,
-    pub mncs: Vec<String>,
+    pub mncs: Option<Vec<String>>,
     #[serde(rename = "networkName")]
-    pub network_name: String,
+    pub network_name: Option<String>,
     pub price: f64,
 }
 
@@ -27,7 +27,7 @@ pub struct CountryPricing {
 #[derive(Deserialize)]
 pub struct PricingResponse {
     #[serde(rename = "countCountries")]
-    pub count_countries: u32,
+    pub count_countries: u16,
     #[serde(rename = "countNetworks")]
     pub count_networks: u32,
     pub countries: Vec<CountryPricing>,
@@ -48,7 +48,15 @@ impl Pricing {
         }
     }
 
-    pub fn get(&self, params: PricingParams, format: &str) -> Request {
+    pub fn csv(&self, params: PricingParams) -> Result<String, Error> {
+        Ok(self.get(params, "csv").call()?.into_string()?)
+    }
+
+    pub fn json(&self, params: PricingParams) -> Result<PricingResponse, Error> {
+        Ok(self.get(params, "json").call()?.into_json::<PricingResponse>()?)
+    }
+
+    fn get(&self, params: PricingParams, format: &str) -> Request {
         let mut req = self.client.request("GET", "pricing").clone();
 
         if params.country.is_some() {
@@ -56,13 +64,5 @@ impl Pricing {
         }
 
         req.query("format", format)
-    }
-
-    pub fn csv(&self, params: PricingParams) -> Result<String, Error> {
-        Ok(self.get(params, "csv").call()?.into_string()?)
-    }
-
-    pub fn json(&self, params: PricingParams) -> Result<PricingResponse, Error> {
-        Ok(self.get(params, "json").call()?.into_json::<PricingResponse>()?)
     }
 }
