@@ -1,5 +1,4 @@
 use testutil::*;
-use seven_client::sms::{Sms, SmsTextParams, SmsJsonParams};
 use seven_client::status::{Status, StatusParams};
 
 mod testutil;

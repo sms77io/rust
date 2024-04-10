@@ -101,13 +101,11 @@ impl Rcs {
     }
 
     pub fn delete(&self, params: RcsDeleteParams) -> Result<RcsDeleteResponse, Error> {
-        let id = params.id;
-        let endpoint = format!("{ENDPOINT_MESSAGES}/{id}");
+        let endpoint = format!("{}/{}", ENDPOINT_MESSAGES, params.id);
 
-        Ok(self.client.request("DELETE", &*endpoint)
+        Ok(self.client.delete(&*endpoint)
             .call()
             .unwrap()
-            //.send_form(&*[])?
             .into_json::<RcsDeleteResponse>()?)
     }
 
@@ -118,7 +116,7 @@ impl Rcs {
             ("to", &*params.to),
         ];
 
-        Ok(self.client.request("POST", ENDPOINT_EVENTS)
+        Ok(self.client.post( ENDPOINT_EVENTS)
             .send_form(dirty_data)?
             .into_json::<RcsEventResponse>()?)
     }
@@ -126,7 +124,7 @@ impl Rcs {
     pub fn dispatch(&self, params: RcsDispatchParams) -> Result<RcsResponse, Error> {
         let json = serde_json::to_string(&params).unwrap();
 
-        Ok(self.client.request("POST", ENDPOINT_MESSAGES)
+        Ok(self.client.post( ENDPOINT_MESSAGES)
             .set("Content-Type", "application/json")
             .send_string(&*json)?
             .into_json::<RcsResponse>()?)

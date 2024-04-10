@@ -1,5 +1,5 @@
 use testutil::*;
-use seven_client::sms::{Sms, SmsTextParams, SmsJsonParams};
+use seven_client::sms::{Sms, SmsParams};
 
 mod testutil;
 
@@ -8,43 +8,28 @@ fn init_client() -> Sms {
 }
 
 #[test]
-fn text() {
-    assert!(init_client().text(SmsTextParams {
-        debug: None,
+fn dispatch() {
+    let text = "HI2U!".to_string();
+    let to = "491716992343".to_string();
+    let params = SmsParams {
         delay: None,
-        details: None,
         flash: None,
         foreign_id: None,
         from: None,
         label: None,
-        no_reload: None,
         performance_tracking: None,
-        return_msg_id: None,
-        text: "HI2U!".to_string(),
-        to: "+491716992343".to_string(),
+        text: text.clone(),
+        to: to.clone(),
         ttl: None,
         udh: None,
-        unicode: None,
-        utf8: None,
-    }).is_ok());
-}
+    };
+    let result = init_client().dispatch(params);
+    assert!(result.is_ok());
 
-#[test]
-fn json() {
-    assert!(init_client().json(SmsJsonParams {
-        debug: None,
-        delay: None,
-        flash: None,
-        foreign_id: None,
-        from: None,
-        label: None,
-        no_reload: None,
-        performance_tracking: None,
-        text: "HI2U!".to_string(),
-        to: "+491716992343".to_string(),
-        ttl: None,
-        udh: None,
-        unicode: None,
-        utf8: None,
-    }).is_ok());
+    let response = result.unwrap();
+    assert_eq!(response.messages.len(), 1);
+
+    let msg = response.messages.first().unwrap();
+    assert_eq!(msg.text, text);
+    assert_eq!(msg.recipient, to)
 }

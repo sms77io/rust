@@ -1,4 +1,4 @@
-use testutil::*;
+use testutil::{get_client, rand_str};
 use seven_client::hooks::{EventType, HookRequestMethod, Hooks, HookSubscribeParams, HookUnsubscribeParams};
 
 mod testutil;
