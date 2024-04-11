@@ -3,27 +3,27 @@ use seven_client::voice::{Voice, VoiceParams};
 
 mod testutil;
 
-fn client() -> Voice {
+fn init() -> Voice{
     Voice::new(get_client())
 }
-
-fn params() -> VoiceParams {
-    VoiceParams {
-        debug: None,
-        from: Option::from("seven.io".to_string()),
-        ringtime: Option::from(30),
-        text: "HI2U!".to_string(),
-        to: "+49179876543210".to_string(),
-        xml: None,
-    }
-}
-
 #[test]
 fn text() {
-    assert!(client().text(params()).is_ok());
+    let params = VoiceParams {
+        from: None,
+        ringtime: Option::from(30),
+        text: "Hello friend!".to_string(),
+        to: "+491716992343".to_string(),
+    };
+    assert!(init().dispatch(params).is_ok());
 }
 
 #[test]
-fn json() {
-    assert!(client().json(params()).is_ok());
+fn ssml() {
+    let params = VoiceParams {
+        from: None,
+        ringtime: Option::from(30),
+        text: "<voice name=\"de-de-female\">The total is 13.50 Euros.</voice>".to_string(),
+        to: "+491716992343".to_string(),
+    };
+    assert!(init().dispatch(params).is_ok());
 }
