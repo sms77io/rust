@@ -1,12 +1,20 @@
-use crate::client::Client;
+use serde::{Deserialize};
 use ureq::{Error};
+use crate::client::Client;
 
 pub struct StatusParams {
-    pub msg_id: u64
+    pub msg_ids: Vec<String>
 }
 
 pub struct Status {
     client: Client
+}
+
+#[derive(Deserialize)]
+pub struct StatusResponse {
+    pub id: String,
+    pub status: Option<String>,
+    pub status_time: Option<String>,
 }
 
 impl Status {
@@ -16,10 +24,11 @@ impl Status {
         }
     }
 
-    pub fn text(&self, params: StatusParams) -> Result<String, Error> {
-        Ok(self.client.request("GET", "status")
-            .query("msg_id", &*params.msg_id.to_string())
-            .call()?
-            .into_string()?)
+    pub fn get(&self, params: StatusParams) -> Result<Vec<StatusResponse>, Error> {
+        Ok(self.client.get("status")
+            .query("msg_id", &*params.msg_ids.join(","))
+            .call()
+            .unwrap()
+            .into_json()?)
     }
 }
