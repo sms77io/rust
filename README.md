@@ -9,8 +9,17 @@
 ### Example
 
 ```rust
-let client = Client::new("MySecretApiKeyFromSeven.io!".to_string());
-println!("Balance: {}", client.get().is_ok());
+use seven_client::client::Client;
+use seven_client::balance::Balance;
+
+fn main() {
+    let client = Client::new("MySecretApiKeyFromSeven.io!".to_string());
+    let resource = Balance::new(client);
+    let result = resource.get();
+    println!("Success: {}", result.is_ok());
+    let response = result.unwrap();
+    println!("Balance: {} {}", response.amount, response.currency);
+}
 ```
 
 #### Support

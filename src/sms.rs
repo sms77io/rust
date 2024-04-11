@@ -1,11 +1,13 @@
 use crate::client::Client;
 use ureq::{Error};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize, Serializer};
+use serde::ser::SerializeStruct;
+use base64::{Engine as _, engine::{general_purpose}};
 
-const ENDPOINT: &str = "sms";
-
+#[derive(Clone, Serialize)]
 pub struct SmsParams {
     pub delay: Option<String>,
+    pub files: Option<Vec<SmsFile>>,
     pub flash: Option<bool>,
     pub foreign_id: Option<String>,
     pub from: Option<String>,
@@ -17,7 +19,39 @@ pub struct SmsParams {
     pub performance_tracking: Option<bool>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone)]
+pub struct SmsFile {
+    pub contents: String,
+    pub name: String,
+    pub password: Option<String>,
+    pub validity: Option<u16>,
+}
+impl SmsFile {
+    pub fn new(mut file: SmsFile) -> Self {
+        let contents = file.clone().contents;
+        if !general_purpose::STANDARD.decode(contents).is_ok() {
+            file.contents = general_purpose::STANDARD.encode(file.contents);
+        }
+
+        file
+    }
+}
+
+impl Serialize for SmsFile {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("SmsFile", 4)?;
+        state.serialize_field("contents", &self.contents)?;
+        state.serialize_field("name", &self.name)?;
+        state.serialize_field("password", &self.clone().password.unwrap_or_default())?;
+        state.serialize_field("validity", &self.validity.unwrap_or_default())?;
+        state.end()
+    }
+}
+
+#[derive(Deserialize, Debug)]
 pub struct SmsResponse {
     pub balance: f64,
     pub debug: String,
@@ -27,7 +61,7 @@ pub struct SmsResponse {
     pub total_price: f64,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct SmsMessage {
     pub encoding: String,
     pub error: Option<u16>,
@@ -46,7 +80,18 @@ pub struct SmsMessage {
 }
 
 pub struct Sms {
-    client: Client
+    client: Client,
+}
+
+#[derive(Serialize)]
+pub struct DeleteSmsParams {
+    pub ids: Vec<String>
+}
+
+#[derive(Deserialize)]
+pub struct DeleteSmsResponse {
+    pub deleted: Option<Vec<String>>,
+    pub success: bool,
 }
 
 impl Sms {
@@ -56,20 +101,21 @@ impl Sms {
         }
     }
 
+    pub fn delete(&self, params: DeleteSmsParams) -> Result<DeleteSmsResponse, Error> {
+        let result = self.client.delete("sms")
+            .send_json(params)
+            .unwrap()
+            .into_json()?;
+
+        Ok(result)
+    }
+
     pub fn dispatch(&self, params: SmsParams) -> Result<SmsResponse, Error> {
-        Ok(self.client.post(ENDPOINT)
-            .send_form(&[
-                ("delay", &*params.delay.unwrap_or_default()),
-                ("flash", &*params.flash.unwrap_or_default().to_string()),
-                ("foreign_id", &*params.foreign_id.unwrap_or_default()),
-                ("from", &*params.from.unwrap_or_default()),
-                ("label", &*params.label.unwrap_or_default()),
-                ("performance_tracking", &*params.performance_tracking.unwrap_or_default().to_string()),
-                ("text", &*params.text),
-                ("to", &*params.to),
-                ("ttl", &*params.ttl.unwrap_or_default().to_string()),
-                ("udh", &*params.udh.unwrap_or_default()),
-            ])?
-            .into_json::<SmsResponse>()?)
+        let result = self.client.post("sms")
+            .send_json(params)
+            .unwrap()
+            .into_json()?;
+
+        Ok(result)
     }
 }
