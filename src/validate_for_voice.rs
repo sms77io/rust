@@ -1,6 +1,6 @@
 use crate::client::Client;
 use ureq::{Error};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct ValidateForVoiceResponse {
@@ -13,7 +13,7 @@ pub struct ValidateForVoiceResponse {
     pub voice: Option<bool>,
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize)]
 pub struct ValidateForVoiceParams {
     pub callback: Option<String>,
     pub number: String,
@@ -31,12 +31,9 @@ impl ValidateForVoice {
     }
 
     pub fn post(&self, params: ValidateForVoiceParams) -> Result<ValidateForVoiceResponse, Error> {
-        Ok(self.client.request("POST", "validate_for_voice")
-            .send_form(&[
-                ("callback", &*params.callback.unwrap_or_default()),
-                ("number", &*params.number),
-            ])?
-            .into_json::<ValidateForVoiceResponse>()?
+        Ok(self.client.post("validate_for_voice")
+            .send_json(params)?
+            .into_json()?
         )
     }
 }

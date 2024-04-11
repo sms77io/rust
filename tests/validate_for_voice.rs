@@ -1,5 +1,4 @@
 use testutil::*;
-use seven_client::voice::{Voice, VoiceParams};
 use seven_client::validate_for_voice::{ValidateForVoice, ValidateForVoiceParams};
 
 mod testutil;
