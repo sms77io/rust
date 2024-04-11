@@ -220,7 +220,6 @@ impl Lookup {
 
     fn get(&self, params: LookupParams, type_: &str) -> Result<Response, Error> {
         let result = self.client.get(format!("lookup/{}", type_).as_str())
-            .set("Accept", "application/json")
             .query("number", &*params.number)
             .call()?;
 

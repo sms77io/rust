@@ -3,7 +3,6 @@ use ureq::{Error};
 use serde::{Deserialize, Serialize};
 
 const ENDPOINT_MESSAGES: &str = "rcs/messages";
-const ENDPOINT_EVENTS: &str = "rcs/events";
 
 #[derive(Serialize)]
 pub enum RcsEvent {
@@ -116,7 +115,7 @@ impl Rcs {
             ("to", &*params.to),
         ];
 
-        Ok(self.client.post( ENDPOINT_EVENTS)
+        Ok(self.client.post("rcs/events")
             .send_form(dirty_data)?
             .into_json::<RcsEventResponse>()?)
     }
@@ -124,8 +123,7 @@ impl Rcs {
     pub fn dispatch(&self, params: RcsDispatchParams) -> Result<RcsResponse, Error> {
         let json = serde_json::to_string(&params).unwrap();
 
-        Ok(self.client.post( ENDPOINT_MESSAGES)
-            .set("Content-Type", "application/json")
+        Ok(self.client.post(ENDPOINT_MESSAGES)
             .send_string(&*json)?
             .into_json::<RcsResponse>()?)
     }

@@ -21,7 +21,6 @@ impl Balance {
 
     pub fn get(&self) -> Result<BalanceResponse, Error> {
         let res = self.client.request("GET", "balance")
-            .set("Accept", "application/json")
             .call()?
             .into_json()?;
         Ok(res)
