@@ -27,11 +27,55 @@ pub struct RcsDeleteParams {
 }
 
 #[derive(Serialize)]
+pub enum RcsEventTarget {
+    #[serde(rename = "msg_id")]
+    MessageId,
+    #[serde(rename = "to")]
+    PhoneNumber,
+}
+
+#[derive(Serialize)]
 pub struct RcsEventParams {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    msg_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    to: Option<String>,
     pub event: RcsEvent,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub msg_id: Option<String>,
-    pub to: String,
+    pub from: Option<String>,
+    #[serde(skip_serializing)]
+    pub target: RcsEventTarget,
+}
+
+impl RcsEventParams {
+    pub fn new(target: RcsEventTarget, value: String) -> Self {
+        let mut params = Self{
+            msg_id: None,
+            to: None,
+            event: RcsEvent::IsTyping,
+            from: None,
+            target,
+        };
+
+        let option = Option::from(value);
+
+        match params.target {
+            RcsEventTarget::MessageId => {
+                params.msg_id = option;
+            }
+            RcsEventTarget::PhoneNumber => {
+                params.to = option;
+            }
+        }
+
+        params
+    }
+}
+
+#[derive(Serialize)]
+struct EventParams {
+    #[serde(flatten)]
+    msg_id: RcsEventParams,
 }
 
 #[derive(Serialize)]
@@ -109,15 +153,9 @@ impl Rcs {
     }
 
     pub fn event(&self, params: RcsEventParams) -> Result<RcsEventResponse, Error> {
-        let dirty_data = &[
-            ("event", &*params.event.as_str()),
-            ("msg_id", &*params.msg_id.unwrap_or_default()),
-            ("to", &*params.to),
-        ];
-
         Ok(self.client.post("rcs/events")
-            .send_form(dirty_data)?
-            .into_json::<RcsEventResponse>()?)
+            .send_json(params)?
+            .into_json()?)
     }
 
     pub fn dispatch(&self, params: RcsDispatchParams) -> Result<RcsResponse, Error> {

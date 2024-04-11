@@ -1,5 +1,5 @@
 use testutil::*;
-use seven_client::rcs::{Rcs, RcsDeleteParams, RcsDispatchParams, RcsEventParams, RcsEvent};
+use seven_client::rcs::{Rcs, RcsDeleteParams, RcsDispatchParams, RcsEventParams, RcsEvent, RcsEventTarget};
 
 mod testutil;
 
@@ -62,14 +62,23 @@ fn delete() {
 }
 
 #[test]
-fn event() {
-    let params = RcsEventParams {
-        event: RcsEvent::IsTyping,
-        msg_id: None,
-        to: "4915237035388".to_string(),
-    };
-    let client = init();
-    let result = client.event(params);
+fn event_to() {
+    let mut params = RcsEventParams::new(RcsEventTarget::PhoneNumber, "4915237035388".to_string());
+    params.event = RcsEvent::Read;
+
+    event(params)
+}
+
+#[test]
+fn event_msg_id() {
+    let mut params = RcsEventParams::new(RcsEventTarget::MessageId, "12345".to_string());
+    params.event = RcsEvent::IsTyping;
+
+    event(params)
+}
+
+fn event(params: RcsEventParams) {
+    let result = init().event(params);
     let response = result.unwrap();
 
     assert_eq!(response.success, true);
