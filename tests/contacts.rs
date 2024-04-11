@@ -1,6 +1,5 @@
 use std::option::Option;
 use std::convert::TryFrom;
-use std::time::{SystemTime, UNIX_EPOCH};
 use ureq::Error;
 use testutil::*;
 use seven_client::contacts::{Contacts, ContactsListParams, Contact, ContactInitials, ContactProperties, ContactValidation};
@@ -18,7 +17,6 @@ fn update() {
     let original_contact = original_contact_res.unwrap();
 
     let client = init_client();
-    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros().to_string();
     let updated_res = client.update(Contact{
         avatar: Option::from("https://avatars.githubusercontent.com/u/37155205".to_string()),
         created: original_contact.created,
@@ -29,7 +27,7 @@ fn update() {
             address: Option::from("Address".to_string()),
             birthday: Option::from("01.01.1900".to_string()),
             city: Option::from("New City".to_string()),
-            email: Option::from(format!("rust_{timestamp}@seven.dev").to_string()),
+            email: Option::from(create_mail()),
             firstname: Option::from("First Name".to_string()),
             home_number: Option::from(4943123456789),
             lastname:  Option::from("Lastname".to_string()),

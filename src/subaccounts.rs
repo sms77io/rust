@@ -1,22 +1,23 @@
+use std::io::ErrorKind;
 use crate::{client::Client};
-use ureq::{Error};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
+use ureq;
 
 const ENDPOINT: &str = "subaccounts";
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AutoTopUp {
     pub amount: Option<f32>,
     pub threshold: Option<f32>,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Contact {
-    pub name: String,
     pub email: String,
+    pub name: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Subaccount {
     pub auto_topup: AutoTopUp,
     pub balance: f32,
@@ -52,24 +53,27 @@ pub struct DeleteResponse {
     pub success: bool,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
 pub struct CreateParams {
     pub email: String,
     pub name: String,
 }
 
+#[derive(Serialize)]
 pub struct DeleteParams {
     pub id: u32,
 }
 
+#[derive(Serialize)]
 pub struct TransferCreditsParams {
-    pub id: u32,
     pub amount: f32,
+    pub id: u32,
 }
 
+#[derive(Serialize)]
 pub struct AutoChargeParams {
-    pub id: u32,
     pub amount: f32,
+    pub id: u32,
     pub threshold: f32,
 }
 
@@ -84,56 +88,64 @@ impl Subaccounts {
         }
     }
 
-    pub fn read(&self) -> Result<Vec<Subaccount>, Error> {
-        let res = self.client.request("GET", ENDPOINT)
-            .clone()
+    pub fn get(&self, id: u32) -> Result<Subaccount, ureq::Error> {
+        let result = self.client.get(ENDPOINT)
+            .query("action", "read")
+            .query("id", &*id.to_string())
+            .call()?
+            .into_json::<Vec<Subaccount>>();
+
+        if result.is_err() {
+            return Err(ureq::Error::from(result.err().unwrap()));
+        }
+
+        let response = result.unwrap();
+        let first = response.first();
+        let has_entries = response.len() > 0;
+        if has_entries {
+            return Ok(first.unwrap().clone());
+        }
+
+        return Err(ureq::Error::from(std::io::Error::from(ErrorKind::NotFound)));
+    }
+
+    pub fn list(&self) -> Result<Vec<Subaccount>, ureq::Error> {
+        let res = self.client.get(ENDPOINT)
             .query("action", "read")
             .call()?
-            .into_json::<Vec<Subaccount>>()?;
+            .into_json()?;
         Ok(res)
     }
 
-    pub fn create(&self, params: CreateParams) -> Result<CreateResponse, Error> {
-        let res = self.client.request("POST", ENDPOINT)
-            .send_form(&[
-                ("action", "create"),
-                ("email", &*params.email),
-                ("name", &*params.name),
-            ])?
-            .into_json::<CreateResponse>()?;
+    pub fn create(&self, params: CreateParams) -> Result<CreateResponse, ureq::Error> {
+        let res = self.client.post(ENDPOINT)
+            .query("action", "create")
+            .send_json(params)?
+            .into_json()?;
         Ok(res)
     }
 
-    pub fn transfer_credits(&self, params: TransferCreditsParams) -> Result<TransferCreditsResponse, Error> {
-        let res = self.client.request("POST", ENDPOINT)
-            .send_form(&[
-                ("action", "transfer_credits"),
-                ("amount", &params.amount.to_string()),
-                ("id", &*params.id.to_string()),
-            ])?
-            .into_json::<TransferCreditsResponse>()?;
+    pub fn transfer_credits(&self, params: TransferCreditsParams) -> Result<TransferCreditsResponse, ureq::Error> {
+        let res = self.client.post(ENDPOINT)
+            .query("action", "transfer_credits")
+            .send_json(params)?
+            .into_json()?;
         Ok(res)
     }
 
-    pub fn auto_charge(&self, params: AutoChargeParams) -> Result<AutoChargeResponse, Error> {
-        let res = self.client.request("POST", ENDPOINT)
-            .send_form(&[
-                ("action", "update"),
-                ("amount", &*params.amount.to_string()),
-                ("id", &*params.id.to_string()),
-                ("threshold", &*params.threshold.to_string()),
-            ])?
-            .into_json::<AutoChargeResponse>()?;
+    pub fn auto_charge(&self, params: AutoChargeParams) -> Result<AutoChargeResponse, ureq::Error> {
+        let res = self.client.post(ENDPOINT)
+            .query("action", "update")
+            .send_json(params)?
+            .into_json()?;
         Ok(res)
     }
 
-    pub fn delete(&self, params: DeleteParams) -> Result<DeleteResponse, Error> {
-        let res = self.client.request("POST", ENDPOINT)
-            .send_form(&[
-                ("action", "delete"),
-                ("id", &*params.id.to_string()),
-            ])?
-            .into_json::<DeleteResponse>()?;
+    pub fn delete(&self, params: DeleteParams) -> Result<DeleteResponse, ureq::Error> {
+        let res = self.client.post(ENDPOINT)
+            .query("action", "delete")
+            .send_json(params)?
+            .into_json()?;
         Ok(res)
     }
 }
