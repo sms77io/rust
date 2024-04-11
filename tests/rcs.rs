@@ -3,14 +3,15 @@ use seven_client::rcs::{Rcs, RcsDeleteParams, RcsDispatchParams, RcsEventParams,
 
 mod testutil;
 
-fn init_client() -> Rcs {
+fn init() -> Rcs {
     Rcs::new(get_client())
 }
 
 #[test]
 fn text() {
-    let params = RcsDispatchParams {
-        delay: None,
+    let client = init();
+    let result = client.dispatch(RcsDispatchParams {
+        delay: Some("2050-12-31".to_string()),
         foreign_id: None,
         from: None,
         label: None,
@@ -18,13 +19,18 @@ fn text() {
         text: "HI2U!".to_string(),
         to: "4915237035388".to_string(),
         ttl: None,
-    };
-    let client = init_client();
-    let result = client.dispatch(params);
+    });
     assert!(result.is_ok());
 
     let response = result.unwrap();
     assert_eq!(response.messages.len(), 1);
+
+    let msg = response.messages.first().unwrap();
+    let id = <Option<String> as Clone>::clone(&msg.id).unwrap();
+
+    assert!(client.delete(RcsDeleteParams {
+        id,
+    }).is_ok());
 }
 
 #[test]
@@ -39,17 +45,16 @@ fn delete() {
         ttl: None,
         performance_tracking: None,
     };
-    let client = init_client();
+    let client = init();
     let result = client.dispatch(params);
     let binding = result.unwrap();
     let message = binding.messages.first();
-    let id = message.unwrap().id.clone().unwrap().parse::<u64>().unwrap();
+    let id = message.unwrap().id.clone().unwrap();
 
-    let params = RcsDeleteParams {
+    let client = init();
+    let result = client.delete(RcsDeleteParams {
         id
-    };
-    let client = init_client();
-    let result = client.delete(params);
+    });
     assert!(result.is_ok());
 
     let response = result.unwrap();
@@ -63,7 +68,7 @@ fn event() {
         msg_id: None,
         to: "4915237035388".to_string(),
     };
-    let client = init_client();
+    let client = init();
     let result = client.event(params);
     let response = result.unwrap();
 

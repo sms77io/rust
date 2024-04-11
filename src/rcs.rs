@@ -23,7 +23,7 @@ impl RcsEvent {
 
 #[derive(Serialize)]
 pub struct RcsDeleteParams {
-    pub id: u64,
+    pub id: String,
 }
 
 #[derive(Serialize)]
@@ -105,7 +105,7 @@ impl Rcs {
         Ok(self.client.delete(&*endpoint)
             .call()
             .unwrap()
-            .into_json::<RcsDeleteResponse>()?)
+            .into_json()?)
     }
 
     pub fn event(&self, params: RcsEventParams) -> Result<RcsEventResponse, Error> {
@@ -121,10 +121,8 @@ impl Rcs {
     }
 
     pub fn dispatch(&self, params: RcsDispatchParams) -> Result<RcsResponse, Error> {
-        let json = serde_json::to_string(&params).unwrap();
-
         Ok(self.client.post(ENDPOINT_MESSAGES)
-            .send_string(&*json)?
-            .into_json::<RcsResponse>()?)
+            .send_json(params)?
+            .into_json()?)
     }
 }
