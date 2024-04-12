@@ -57,7 +57,7 @@ impl Pricing {
     }
 
     fn get(&self, params: PricingParams, format: &str) -> Request {
-        let mut req = self.client.request("GET", "pricing").clone();
+        let mut req = self.client.get( "pricing").clone();
 
         if params.country.is_some() {
             req = req.query("country", &*params.country.unwrap_or_default().to_string());

@@ -20,7 +20,7 @@ impl Balance {
     }
 
     pub fn get(&self) -> Result<BalanceResponse, Error> {
-        let res = self.client.request("GET", "balance")
+        let res = self.client.get( "balance")
             .call()?
             .into_json()?;
         Ok(res)

@@ -69,7 +69,7 @@ impl Contacts {
     }
 
     pub fn create(&self, contact: Contact) -> Result<Contact, Error> {
-        let res = self.client.request("POST", "contacts")
+        let res = self.client.post("contacts")
             .send_form(&[
                 ("address", &*contact.properties.address.unwrap_or_default()),
                 ("avatar", &*contact.avatar.unwrap_or_default()),
@@ -92,13 +92,13 @@ impl Contacts {
 
     pub fn delete(&self, id: u64) -> Result<Response, Error> {
         let endpoint = format!("contacts/{id}");
-        let res = self.client.request("DELETE", &*endpoint)
+        let res = self.client.delete(&*endpoint)
             .call()?;
         Ok(res)
     }
 
     pub fn list(&self, params: ContactsListParams) -> Result<ContactsListResponse, Error> {
-        let res = self.client.request("GET", "contacts")
+        let res = self.client.get( "contacts")
             .query("group_id", &*params.group_id.unwrap_or_default().to_string())
             .query("limit", &*params.limit.unwrap_or_default().to_string())
             .query("offset", &*params.offset.unwrap_or_default().to_string())

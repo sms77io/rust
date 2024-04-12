@@ -45,7 +45,7 @@ impl Groups {
     }
 
     pub fn all(&self) -> Result<GroupsResponse, Error> {
-        let res = self.client.request("GET", "groups")
+        let res = self.client.get("groups")
             .call()?
             .into_json::<GroupsResponse>()?;
         Ok(res)
@@ -53,14 +53,14 @@ impl Groups {
 
     pub fn get(&self, id: u64) -> Result<Group, Error> {
         let endpoint = format!("groups/{id}");
-        let res = self.client.request("GET", &endpoint)
+        let res = self.client.get(&endpoint)
             .call()?
             .into_json::<Group>()?;
         Ok(res)
     }
 
     pub fn create(&self, group: Group) -> Result<Group, Error> {
-        let res = self.client.request("POST", "groups")
+        let res = self.client.post("groups")
             .send_form(&[
                 ("name", &*group.name),
             ])?
@@ -71,7 +71,7 @@ impl Groups {
     pub fn update(&self, group: Group) -> Result<Group, Error> {
         let id = group.id.unwrap();
         let endpoint = format!("groups/{id}");
-        let res = self.client.request("PATCH", &endpoint)
+        let res = self.client.patch(&endpoint)
             .send_form(&[
                 ("name", &*group.name),
             ])?
@@ -81,7 +81,7 @@ impl Groups {
 
     pub fn delete(&self, id: u64, delete_contacts: bool) -> Result<DeleteGroupResponse, Error> {
         let endpoint = format!("groups/{id}");
-        let res = self.client.request("DELETE", &*endpoint)
+        let res = self.client.delete(&*endpoint)
             .send_form(&[
                 ("delete_contacts", if delete_contacts {"1"} else {"0"}),
             ])?

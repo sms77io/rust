@@ -156,14 +156,14 @@ impl Numbers {
     }
 
     pub fn active(&self) -> Result<ActiveNumbers, Error> {
-        let res = self.client.request("GET", "numbers/active")
+        let res = self.client.get("numbers/active")
             .call()?
             .into_json::<ActiveNumbers>()?;
         Ok(res)
     }
 
     pub fn available(&self, params: AvailableNumbersParams) -> Result<AvailableNumbers, Error> {
-        let res = self.client.request("GET", "numbers/available")
+        let res = self.client.get( "numbers/available")
             .query("country", &*params.country.unwrap_or_default())
             .query("features_a2p_sms", &*bool::to_string(&params.features_a2p_sms.unwrap_or_default()))
             .query("features_sms", &*bool::to_string(&params.features_sms.unwrap_or_default()))
@@ -176,7 +176,7 @@ impl Numbers {
     pub fn delete(&self, params: DeleteNumberParams) -> Result<DeleteNumberResponse, Error> {
         let number = params.number;
         let endpoint = format!("numbers/active/{number}");
-        let res = self.client.request("DELETE", &*endpoint)
+        let res = self.client.delete(&*endpoint)
             .query("delete_immediately", &*bool::to_string(&params.delete_immediately.unwrap_or_default()))
             .call()?
             .into_json::<DeleteNumberResponse>()?;
@@ -185,14 +185,14 @@ impl Numbers {
 
     pub fn get(&self, number: String) -> Result<PhoneNumber, Error> {
         let endpoint = format!("numbers/active/{number}");
-        let res = self.client.request("GET", &*endpoint)
+        let res = self.client.get(&*endpoint)
             .call()?
             .into_json::<PhoneNumber>()?;
         Ok(res)
     }
 
     pub fn order(&self, params: OrderNumberParams) -> Result<OrderNumberResponse, Error> {
-        let res = self.client.request("POST", "numbers/order")
+        let res = self.client.post("numbers/order")
             .send_form(&[
                 ("number", &*params.number),
                 ("payment_interval", params.payment_interval.unwrap_or_default().as_str()),
@@ -204,7 +204,7 @@ impl Numbers {
     pub fn update(&self, params: UpdateNumberParams) -> Result<PhoneNumber, Error> {
         let number = params.number;
         let endpoint = format!("numbers/active/{number}");
-        let res = self.client.request("PATCH", &*endpoint)
+        let res = self.client.patch(&*endpoint)
             .send_form(&[
                 ("email_forward", &*params.email_forward.unwrap_or_default()),
                 ("friendly_name", &*params.friendly_name.unwrap_or_default()),

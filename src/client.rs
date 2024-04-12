@@ -22,7 +22,7 @@ impl Client {
          self.request("PATCH", endpoint)
     }
 
-    pub fn request(&self, method: &str, endpoint: &str) -> Request {
+    fn request(&self, method: &str, endpoint: &str) -> Request {
         ureq::request(method, &*format!("https://gateway.seven.io/api/{}", endpoint))
             .set("Accept", "application/json")
             .set("SentWith", &*self.sent_with)
