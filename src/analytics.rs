@@ -1,8 +1,8 @@
-use crate::{client::Client, to_string};
+use crate::{client::Client};
 use ureq::{Error, Request};
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
 
-#[derive(Default)]
+#[derive(Default, Serialize)]
 pub struct AnalyticsParams {
     pub end: Option<String>,
     pub label: Option<String>,
@@ -11,51 +11,65 @@ pub struct AnalyticsParams {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct AnalyticByCountry {
-    #[serde(deserialize_with = "to_string")]
-    pub country: String,
+pub struct AnalyticBase {
     pub hlr: u32,
     pub inbound: u32,
     pub mnp: u32,
     pub sms: u32,
     pub usage_eur: f64,
     pub voice: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AnalyticByCountry {
+    #[serde(flatten)]
+    base: AnalyticBase,
+    pub country: String,
+}
+
+impl std::ops::Deref for AnalyticByCountry {
+    type Target = AnalyticBase;
+    fn deref(&self) -> &Self::Target {
+        &self.base
+    }
 }
 
 #[derive(Debug, Deserialize)]
 pub struct AnalyticByDate {
+    #[serde(flatten)]
+    base: AnalyticBase,
     pub date: String,
-    pub hlr: u32,
-    pub inbound: u32,
-    pub mnp: u32,
-    pub sms: u32,
-    pub usage_eur: f64,
-    pub voice: u32,
 }
-
+impl std::ops::Deref for AnalyticByDate {
+    type Target = AnalyticBase;
+    fn deref(&self) -> &Self::Target {
+        &self.base
+    }
+}
 #[derive(Debug, Deserialize)]
 pub struct AnalyticByLabel {
-    pub hlr: u32,
-    pub inbound: u32,
-    #[serde(deserialize_with = "to_string")]
+    #[serde(flatten)]
+    base: AnalyticBase,
     pub label: String,
-    pub mnp: u32,
-    pub sms: u32,
-    pub usage_eur: f64,
-    pub voice: u32,
 }
-
+impl std::ops::Deref for AnalyticByLabel {
+    type Target = AnalyticBase;
+    fn deref(&self) -> &Self::Target {
+        &self.base
+    }
+}
 #[derive(Debug, Deserialize)]
 pub struct AnalyticBySubaccount {
     pub account: String,
-    pub hlr: u32,
-    pub inbound: u32,
-    pub mnp: u32,
-    pub sms: u32,
-    pub usage_eur: f64,
-    pub voice: u32,
+    #[serde(flatten)]
+    base: AnalyticBase,
 }
-
+impl std::ops::Deref for AnalyticBySubaccount {
+    type Target = AnalyticBase;
+    fn deref(&self) -> &Self::Target {
+        &self.base
+    }
+}
 pub struct Analytics {
     client: Client
 }
@@ -96,21 +110,8 @@ impl Analytics {
     }
 
     fn get(&self, params: AnalyticsParams, group_by: &str) -> Request {
-        let mut req = self.client.get("analytics").clone();
-
-        if params.end.is_some() {
-            req = req.query("end", &*params.end.unwrap_or_default());
-        }
-        if params.label.is_some() {
-            req = req.query("label", &*params.label.unwrap_or_default());
-        }
-        if params.start.is_some() {
-            req = req.query("start", &*params.start.unwrap_or_default());
-        }
-        if params.subaccounts.is_some() {
-            req = req.query("subaccounts", &*params.subaccounts.unwrap_or_default());
-        }
-
-        req.query("group_by", group_by)
+        let qs = serde_qs::to_string(&params).unwrap();
+        let path = format!("analytics?{}", qs);
+        self.client.get(&*path).query("group_by", group_by)
     }
 }

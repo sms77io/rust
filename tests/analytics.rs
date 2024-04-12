@@ -1,57 +1,77 @@
+extern crate chrono;
+
+use std::ops::Sub;
+use chrono::{Local, TimeZone, Duration};
 use testutil::*;
 use seven_client::analytics::{AnalyticsParams, Analytics};
 
 mod testutil;
 
-fn init_client() -> Analytics {
+fn init() -> Analytics {
     Analytics::new(get_client())
-}
-
-fn default_params() -> AnalyticsParams {
-    AnalyticsParams {
-        end: None,
-        label: None,
-        start: None,
-        subaccounts: None,
-    }
 }
 
 #[test]
 fn grouped_by_country() {
-    let result = init_client().group_by_country(default_params());
+    let format = "%Y-%m-%d";
+    let now = Local::now();
+    let end = now.format(format).to_string();
+    let start = (now - Duration::days(30)).format(format).to_string();
+    let result = init().group_by_country(AnalyticsParams {
+        end: Some(end),
+        label: None,
+        start: Some(start),
+        subaccounts: None,
+    });
     assert!(result.is_ok());
 
-    let response = result.unwrap();
-    for entry in response {
-        assert_eq!(entry.country.is_empty(), false);
+    for entry in result.unwrap() {
+        assert!(entry.usage_eur >= 0.0);
     }
-
 }
 
 #[test]
 fn grouped_by_date() {
-    let result = init_client().group_by_date(default_params());
+    let result = init().group_by_date(AnalyticsParams {
+        end: None,
+        label: None,
+        start: None,
+        subaccounts: None,
+    });
     assert!(result.is_ok());
 
-    let response = result.unwrap();
-    for entry in response {
-        assert_eq!(entry.date.is_empty(), false);
+    for entry in result.unwrap() {
+        assert!(!entry.date.is_empty());
+        assert!(entry.usage_eur >= 0.0);
     }
 }
 
 #[test]
 fn grouped_by_label() {
-    let result = init_client().group_by_label(default_params());
+    let result = init().group_by_label(AnalyticsParams {
+        end: None,
+        label: None,
+        start: None,
+        subaccounts: None,
+    });
     assert!(result.is_ok());
+
+    for entry in result.unwrap() {
+        assert!(entry.usage_eur >= 0.0);
+    }
 }
 
 #[test]
 fn grouped_by_subaccount() {
-    let result = init_client().group_by_subaccount(default_params());
+    let result = init().group_by_subaccount(AnalyticsParams {
+        end: None,
+        label: None,
+        start: None,
+        subaccounts: None,
+    });
     assert!(result.is_ok());
 
-    let response = result.unwrap();
-    for entry in response {
-        assert_eq!(entry.account.is_empty(), false);
+    for entry in result.unwrap() {
+        assert!(!entry.account.is_empty());
     }
 }
