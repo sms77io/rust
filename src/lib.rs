@@ -22,6 +22,7 @@ pub mod numbers;
 pub struct PagingMetadata {
     pub count: u64,
     pub has_more: bool,
+    pub limit: u16,
     pub offset: u64,
     pub total: u64,
 }
@@ -32,15 +33,6 @@ pub enum OrderDirection {
     #[default]
     Asc,
     Desc
-}
-
-impl OrderDirection {
-    fn as_str(&self) -> &'static str {
-        match self {
-            OrderDirection::Asc => "asc",
-            OrderDirection::Desc => "desc"
-        }
-    }
 }
 
 fn to_string<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {

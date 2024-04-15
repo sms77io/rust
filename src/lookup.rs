@@ -34,21 +34,6 @@ impl RcsCapability {
         }
     }
 
-/*    pub fn iterator() -> Iter<'static, str> {
-        static CAPABILITIES: [str; 9] = [
-            *RcsCapability::ActionCreateCalendarEvent.as_str(),
-            *RcsCapability::ActionDial.as_str(),
-            *RcsCapability::ActionOpenUrl.as_str(),
-            *RcsCapability::ActionShareLocation.as_str(),
-            *RcsCapability::ActionViewLocation.as_str(),
-            *RcsCapability::FeatureUnspecified.as_str(),
-            *RcsCapability::Revocation.as_str(),
-            *RcsCapability::RichcardCarousel.as_str(),
-            *RcsCapability::RichcardStandalone.as_str(),
-        ];
-        CAPABILITIES.iter()
-    }*/
-
     pub fn is_valid(str: &str) -> bool {
         for capability in RcsCapability::iter() {
             if capability.as_str() == str {

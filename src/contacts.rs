@@ -1,46 +1,157 @@
+use serde_aux::prelude::{deserialize_number_from_string};
 use crate::{client::Client, OrderDirection, PagingMetadata};
 use ureq::{Error, Response};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+
+#[derive(Debug, Serialize)]
+struct ContactUpsertParams {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub avatar: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<u64>,
+    #[serde(flatten)]
+    pub properties: ContactProperties,
+}
+impl ContactUpsertParams {
+    fn new(contact: Contact) -> Self {
+        return ContactUpsertParams{
+            avatar: contact.avatar,
+            groups: contact.groups,
+            properties: contact.properties,
+        };
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Contact {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub avatar: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub created: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub groups: Vec<u64>,
-    pub id: Option<u64>,
+    #[serde(deserialize_with = "deserialize_number_from_string", skip_serializing_if = "is_default_id")]
+    pub id: u64,
+    #[serde(skip_serializing)]
     pub initials: ContactInitials,
     pub properties: ContactProperties,
+    #[serde(skip_serializing)]
     pub validation: ContactValidation,
+}
+impl Contact {
+    pub fn new(properties: ContactProperties, avatar: Option<String>, groups: Option<Vec<u64>>) -> Self {
+        return Contact{
+            avatar,
+            created: None,
+            groups: groups.unwrap_or_default(),
+            id: Default::default(),
+            initials: ContactInitials::new(),
+            properties,
+            validation: ContactValidation::new(),
+        }
+    }
+}
 
+fn is_default_id(b: impl std::borrow::Borrow<u64>) -> bool {
+    let default: u64 = Default::default();
+    b.borrow() == &default
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContactValidation {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub state: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub timestamp: Option<String>,
+}
+impl ContactValidation {
+    pub fn new() -> Self {
+        return ContactValidation{
+            state: None,
+            timestamp: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContactInitials {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub initials: Option<String>,
+}
+impl ContactInitials {
+    pub fn new() -> Self {
+        return ContactInitials{
+            color: None,
+            initials: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ContactProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub birthday: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
+    //#[serde(flatten)]
+    //pub custom_fields: HashMap<String, Value>, // TODO: flatten?
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub firstname: Option<String>,
-    pub home_number: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_option_string_from_number")]
+    pub home_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lastname: Option<String>,
-    pub mobile_number: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_option_string_from_number")]
+    pub mobile_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", deserialize_with = "deserialize_option_string_from_number")]
     pub postal_code: Option<String>,
 }
+impl ContactProperties {
+    pub fn new() -> Self {
+        return ContactProperties{
+            address: None,
+            birthday: None,
+            city: None,
+            //custom_fields: Default::default(),
+            email: None,
+            firstname: None,
+            home_number: None,
+            lastname: None,
+            mobile_number: None,
+            notes: None,
+            postal_code: None,
+        }
+    }
+}
 
-#[derive(Default)]
+pub fn deserialize_option_string_from_number<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+    where
+        D: Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum StringOrNumber {
+        String(String),
+        Number(i64),
+        Null,
+    }
+
+    match StringOrNumber::deserialize(deserializer)? {
+        StringOrNumber::String(s) => Ok(Some(s)),
+        StringOrNumber::Number(i) => Ok(Some(i.to_string())),
+        StringOrNumber::Null => Ok(None),
+    }
+}
+
+#[derive(Default, Serialize)]
 pub struct ContactsListParams {
     pub group_id: Option<u64>,
     pub limit: Option<u16>,
@@ -48,6 +159,18 @@ pub struct ContactsListParams {
     pub order_by: Option<String>,
     pub order_direction: Option<OrderDirection>,
     pub search: Option<String>,
+}
+impl ContactsListParams {
+    pub fn new() -> Self {
+        return ContactsListParams {
+            group_id: None,
+            limit: None,
+            offset: None,
+            order_by: None,
+            order_direction: None,
+            search: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -69,76 +192,32 @@ impl Contacts {
     }
 
     pub fn create(&self, contact: Contact) -> Result<Contact, Error> {
-        let res = self.client.post("contacts")
-            .send_form(&[
-                ("address", &*contact.properties.address.unwrap_or_default()),
-                ("avatar", &*contact.avatar.unwrap_or_default()),
-                ("birthday", &*contact.properties.birthday.unwrap_or_default()),
-                ("city", &*contact.properties.city.unwrap_or_default()),
-                ("email", &*contact.properties.email.unwrap_or_default()),
-                ("firstname", &*contact.properties.firstname.unwrap_or_default()),
-                //("groups[]", &*contact.groups.map(String::as_str).join(",")),
-                //("groups[]", &*contact.groups.iter().map(String::as_str).collect()),
-                ("groups[]", &*contact.groups.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(&",".to_string())),
-                ("home_number", &*contact.properties.home_number.unwrap_or_default().to_string()),
-                ("lastname", &*contact.properties.lastname.unwrap_or_default()),
-                ("mobile_number", &*contact.properties.mobile_number.unwrap_or_default().to_string()),
-                ("notes", &*contact.properties.notes.unwrap_or_default()),
-                ("postal_code", &*contact.properties.postal_code.unwrap_or_default()),
-            ])?
-            .into_json::<Contact>()?;
-        Ok(res)
+        Ok(self.client.post("contacts")
+            .set("Content-Type", "application/x-www-form-urlencoded")
+            .send_string(&serde_qs::to_string(&ContactUpsertParams::new(contact)).unwrap())?
+            .into_json()?)
     }
 
     pub fn delete(&self, id: u64) -> Result<Response, Error> {
-        let endpoint = format!("contacts/{id}");
-        let res = self.client.delete(&*endpoint)
-            .call()?;
-        Ok(res)
+        Ok(self.client.delete(&*format!("contacts/{}", id)).call()?)
     }
 
     pub fn list(&self, params: ContactsListParams) -> Result<ContactsListResponse, Error> {
-        let res = self.client.get( "contacts")
-            .query("group_id", &*params.group_id.unwrap_or_default().to_string())
-            .query("limit", &*params.limit.unwrap_or_default().to_string())
-            .query("offset", &*params.offset.unwrap_or_default().to_string())
-            .query("order_by", &*params.order_by.unwrap_or_default())
-            .query("order_direction", &*params.order_direction.unwrap_or_default().as_str())
-            .query("search", &*params.search.unwrap_or_default())
+        Ok(self.client.get(&*format!("contacts?{}", serde_qs::to_string(&params).unwrap()))
             .call()
             .unwrap()
-            .into_json::<ContactsListResponse>()?;
-        Ok(res)
+            .into_json()?)
     }
 
     pub fn one(&self, id: u64) -> Result<Contact, Error> {
-        let endpoint = format!("contacts/{id}");
-        let res = self.client.get(&*endpoint)
+        Ok(self.client.get(&*format!("contacts/{}", id))
             .call()?
-            .into_json::<Contact>()?;
-        Ok(res)
+            .into_json()?)
     }
 
     pub fn update(&self, contact: Contact) -> Result<Contact, Error> {
-        let id = contact.id.unwrap();
-        let res = self.client.patch(&*format!("contacts/{id}"))
-            .send_form(&[
-                ("address", &*contact.properties.address.unwrap_or_default()),
-                ("avatar", &*contact.avatar.unwrap_or_default()),
-                ("birthday", &*contact.properties.birthday.unwrap_or_default()),
-                ("city", &*contact.properties.city.unwrap_or_default()),
-                ("email", &*contact.properties.email.unwrap_or_default()),
-                ("firstname", &*contact.properties.firstname.unwrap_or_default()),
-                //("groups[]", &*contact.groups.map(String::as_str).join(",")),
-                //("groups[]", &*contact.groups.iter().map(String::as_str).collect()),
-                ("groups[]", &*contact.groups.iter().map(|x| x.to_string()).collect::<Vec<_>>().join(&",".to_string())),
-                ("home_number", &*contact.properties.home_number.unwrap_or_default().to_string()),
-                ("lastname", &*contact.properties.lastname.unwrap_or_default()),
-                ("mobile_number", &*contact.properties.mobile_number.unwrap_or_default().to_string()),
-                ("notes", &*contact.properties.notes.unwrap_or_default()),
-                ("postal_code", &*contact.properties.postal_code.unwrap_or_default()),
-            ])?
-            .into_json::<Contact>()?;
-        Ok(res) // TODO: fails because returned "id" is string instead of int
+        Ok(self.client.patch(&*format!("contacts/{}", contact.id))
+            .send_string(&*serde_qs::to_string(&ContactUpsertParams::new(contact)).unwrap())?
+            .into_json()?)
     }
 }

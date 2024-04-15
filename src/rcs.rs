@@ -12,15 +12,6 @@ pub enum RcsEvent {
     Read,
 }
 
-impl RcsEvent {
-    fn as_str(&self) -> &'static str {
-        match self {
-            RcsEvent::IsTyping => "IS_TYPING",
-            RcsEvent::Read => "READ",
-        }
-    }
-}
-
 #[derive(Serialize)]
 pub struct RcsDeleteParams {
     pub id: String,
