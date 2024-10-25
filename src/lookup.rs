@@ -41,7 +41,7 @@ impl RcsCapability {
             }
         }
 
-        return false
+        false
     }
 }
 

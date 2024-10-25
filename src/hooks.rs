@@ -74,7 +74,7 @@ impl HookRequestMethod {
             }
         }
 
-        return false
+        false
     }
 }
 

@@ -40,7 +40,7 @@ pub struct Contact {
 }
 impl Contact {
     pub fn new(properties: ContactProperties, avatar: Option<String>, groups: Option<Vec<u64>>) -> Self {
-        return Contact{
+        Contact{
             avatar,
             created: None,
             groups: groups.unwrap_or_default(),
@@ -66,7 +66,7 @@ pub struct ContactValidation {
 }
 impl ContactValidation {
     pub fn new() -> Self {
-        return ContactValidation{
+        ContactValidation{
             state: None,
             timestamp: None,
         }
